@@ -1,0 +1,149 @@
+<html>
+
+<head>
+    <title>Pacific jQuery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+</head>
+
+<body class="bg-primary">
+    <div style="height: 100%; width: 100%;" class="position-absolute">
+        <img style="z-index: -1; height: 100%; width: 100%; object-fit: cover;" src="img/sunny.jpg" alt="">
+    </div>
+
+    <nav class="sticky-top col-12 bg-white px-4 py-2 shadow align-items-center justify-content-between d-flex">
+        <div>
+            <div>
+                <i style="font-size: 35px;" class="px-2 text-primary fas fa-cloud-sun "></i>
+            </div>
+            <div class="font-weight-bold d-flex align-items-center">
+                <div class="text-primary">Zatec</div>
+                <div class="font-weight-normal">Weather</div>
+            </div>
+        </div>
+
+        <div style="font-size: smaller;" class="align-items-end">
+            Developed by
+            <strong>Pacifique NSHUTI</strong>
+        </div>
+    </nav>
+
+    <content class="d-flex flex-column col-12 align-items-center justify-content-center mt-3">
+
+        <div style="background-color: rgba(0, 0, 0, 0.671);" class="d-flex flex-column align-items-center justify-content-center p-5 rounded">
+            <form id="searchForm">
+                <div class="form-group d-flex align-items-center justify-content-center">
+                    <input required minlength="3" id="location" type="text" placeholder="Enter your City/Location" class="shadow form-control outline-primary border-0 rounded p-2">
+                    <button type="submit" class="d-flex align-items-center justify-content-center ml-2 btn btn-link shadow border text-white">
+                        <span id="findIcon" class="m-1"><i class="fas fa-search-location    "></i></span>
+                        <span id="spinIcon" class="m-1 spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>Find</span> 
+                    </button>
+                </div>
+                <div id="notificationArea">
+                    <div style="font-size: 13px;" class="col-12 d-flex align-items-center justify-content-center bg-danger rounded px-2 text-white d-none">
+                        <div class="p-1"><i class="fas fa-bell    "></i></div>
+                        <div class="p-1" id="notificationMessage"> Something Went Wrong</div>
+                    </div>
+                </div>
+            </form>
+            <div style="font-size: 100px;" class="text-white" id="icon">
+
+            </div>
+            <div style="opacity: 0.8; font-size: 20px;">
+                <p class="text-white font-weight-bold" id="responseLocation"></p>
+            </div>
+            <div style="opacity: 0.8; font-size: 80px; margin-top: -40px;">
+                <p class="text-white font-weight-bold" id="responseTemperature"></p>
+            </div>
+            <div class="d-none font-weight-bold bg-white rounded px-3 py-2 d-flex align-items-center justify-content-center" id="responseState">
+
+            </div>
+            <div class="mt-2 col-12 d-flex justify-content-center bg-white rounded px-3 py-2 d-flex align-items-center justify-content-center">
+                <div class="px-2 border-right border-dark">
+                    <div style="font-size: small;">Wind Speed 🧭</div>
+                    <div class="font-weight-bold" id="responseWindSpeed"></div>
+                </div>
+
+                <div class="px-2">
+                    <div style="font-size: small;">Visibility 👀</div>
+                    <div class="font-weight-bold" id="responseVisibility"></div>
+                </div>
+            </div>
+    </content>
+    <script>
+        $('#notificationArea').hide();
+        $('#spinIcon').hide();
+
+        function resetAppData() {
+            $('#responseLocation').html('None');
+            $('#responseTemperature').html('0' + ' °C');
+            $("#responseState").html('None');
+            $('#responseVisibility').html('0' + ' Km');
+            $('#responseWindSpeed').html('0' + ' Km/h');
+            $('#icon').html("<i class='fas fa-sun'></i>");
+        }
+
+        $(document).ready(function() {
+
+            resetAppData();
+
+            $('#searchForm').submit(function(e) {
+                e.preventDefault();
+
+                $('#findIcon').hide();
+                $('#spinIcon').show();
+
+                $.ajax({
+                    method: 'GET',
+                    url: 'https://api.weatherapi.com/v1/current.json?key=e56e973f71db43f8977110621220801&q=' + $('#location').val() + '&aqi=no',
+                    dataType: 'json',
+                }).done(function(data) {
+                    $('#notificationArea').hide();
+
+                    $('#findIcon').show();
+                    $('#spinIcon').hide();
+
+                    let weatherAppData = {
+                        location: data.location.name + ', ' + data.location.country,
+                        temperature: data.current.feelslike_c,
+                        icon: data.current.condition.icon,
+                        state: data.current.condition.text,
+                        visibility: data.current.vis_km,
+                        windSpeed: data.current.wind_kph,
+                    }
+
+                    $('#responseLocation').html(weatherAppData.location);
+                    $('#responseTemperature').html(weatherAppData.temperature + ' °C');
+                    $("#responseState").html(weatherAppData.state);
+                    $('#responseVisibility').html(weatherAppData.visibility + ' Km');
+                    $('#responseWindSpeed').html(weatherAppData.windSpeed + ' Km/h');
+                    $('#icon').html('<img style="height: 100px;" src=' + weatherAppData.icon + '>');
+
+                }).fail(function(error) {
+                    $('#findIcon').show();
+                    $('#spinIcon').hide();
+
+                    let errorMessage = '';
+                    $('#notificationArea').show();
+
+                    if (error.responseJSON == undefined) {
+                        errorMessage = "No Internet!";
+                        resetAppData();
+                    } else {
+                        errorMessage = error.responseJSON.error.message;
+                        resetAppData();
+                    }
+
+                    $('#notificationMessage').html(errorMessage);
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
